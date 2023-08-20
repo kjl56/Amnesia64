@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Amnesia: The Dark Descent.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+#include "openxr/openxr.h"
 #include "engine/Engine.h"
 
 #include "system/System.h"
@@ -61,36 +61,36 @@ namespace hpl {
 	{
 		mfFPS = 60;
 
-		mlFramecounter=0;
-		mfFrametimestart=0;
-		mfFrametime=0;
-	
+		mlFramecounter = 0;
+		mfFrametimestart = 0;
+		mfFrametime = 0;
+
 		mfUpdateRate = 1;
 
 		mpLowLevelSystem = apLowLevelSystem;
 
-		mfFrametimestart = ((float)cPlatform::GetApplicationTime()) / 1000.0f; 
+		mfFrametimestart = ((float)cPlatform::GetApplicationTime()) / 1000.0f;
 	}
-	
+
 	void cFPSCounter::AddFrame()
 	{
 		mlFramecounter++;
 
 		mfFrametime = (((float)cPlatform::GetApplicationTime()) / 1000.0f) - mfFrametimestart;
-		
+
 		// update the timer
 		if (mfFrametime >= mfUpdateRate)
 		{
-			mfFPS = ((float)mlFramecounter)/mfFrametime;
+			mfFPS = ((float)mlFramecounter) / mfFrametime;
 			mlFramecounter = 0;
-			mfFrametimestart = ((float)cPlatform::GetApplicationTime()) / 1000.0f; 
+			mfFrametimestart = ((float)cPlatform::GetApplicationTime()) / 1000.0f;
 		}
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////////
 	// SETUP VAR CONTAINER
 	//////////////////////////////////////////////////////////////////////////
-	
+
 	//-----------------------------------------------------------------------
 
 	cSetupVarContainer::cSetupVarContainer()
@@ -103,7 +103,7 @@ namespace hpl {
 
 	void cSetupVarContainer::AddString(const tString& asName, const tString& asValue)
 	{
-		std::map<tString, tString>::value_type val(asName,asValue);
+		std::map<tString, tString>::value_type val(asName, asValue);
 		m_mapVars.insert(val);
 	}
 
@@ -126,33 +126,33 @@ namespace hpl {
 	const tString& cSetupVarContainer::GetString(const tString& asName)
 	{
 		std::map<tString, tString>::iterator it = m_mapVars.find(asName);
-		if(it == m_mapVars.end()) return msBlank;
+		if (it == m_mapVars.end()) return msBlank;
 		else return it->second;
 	}
 
 	float cSetupVarContainer::GetFloat(const tString& asName, float afDefault)
 	{
 		const tString& sVal = GetString(asName);
-		if(sVal == "") 
+		if (sVal == "")
 			return afDefault;
-		else 
-			return cString::ToFloat(sVal.c_str(),afDefault);
+		else
+			return cString::ToFloat(sVal.c_str(), afDefault);
 	}
 	int cSetupVarContainer::GetInt(const tString& asName, int alDefault)
 	{
 		const tString& sVal = GetString(asName);
-		if(sVal == "") 
+		if (sVal == "")
 			return alDefault;
-		else 
-			return cString::ToInt(sVal.c_str(),alDefault);
+		else
+			return cString::ToInt(sVal.c_str(), alDefault);
 	}
 	bool cSetupVarContainer::GetBool(const tString& asName, bool abDefault)
 	{
 		const tString& sVal = GetString(asName);
-		if(sVal == "") 
+		if (sVal == "")
 			return abDefault;
-		else 
-			return cString::ToBool(sVal.c_str(),abDefault);
+		else
+			return cString::ToBool(sVal.c_str(), abDefault);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -160,27 +160,25 @@ namespace hpl {
 	//////////////////////////////////////////////////////////////////////////
 
 	//-----------------------------------------------------------------------
-	
-	cEngine* CreateHPLEngine(eHplAPI aApi, tFlag alHplModuleFlags, cEngineInitVars *apVars)
-	{
-		iLowLevelEngineSetup *pGameSetup = NULL;
 
-		switch(aApi)
+	cEngine* CreateHPLEngine(eHplAPI aApi, tFlag alHplModuleFlags, cEngineInitVars* apVars)
+	{
+		iLowLevelEngineSetup* pGameSetup = NULL;
+
+		switch (aApi)
 		{
-			case eHplAPI_OpenGL: pGameSetup = hplNew(cSDLEngineSetup, (alHplModuleFlags) ); break;
+		case eHplAPI_OpenGL: pGameSetup = hplNew(cSDLEngineSetup, (alHplModuleFlags)); break;
 		}
 
-		return hplNew( cEngine,  (pGameSetup,alHplModuleFlags, apVars) ); 
+		return hplNew(cEngine, (pGameSetup, alHplModuleFlags, apVars));
 	}
 
 	//-----------------------------------------------------------------------
 
 	void DestroyHPLEngine(cEngine* apGame)
 	{
-		hplDelete( apGame );
+		hplDelete(apGame);
 	}
-
-	//-----------------------------------------------------------------------
 
 	//////////////////////////////////////////////////////////////////////////
 	// CONSTRUCTORS
@@ -193,9 +191,9 @@ namespace hpl {
 
 	//-----------------------------------------------------------------------
 
-	cEngine::cEngine(iLowLevelEngineSetup *apGameSetup,tFlag alHplSetupFlags, cEngineInitVars *apVars)
+	cEngine::cEngine(iLowLevelEngineSetup* apGameSetup, tFlag alHplSetupFlags, cEngineInitVars* apVars)
 	{
-		GameInit(apGameSetup,alHplSetupFlags, apVars);
+		GameInit(apGameSetup, alHplSetupFlags, apVars);
 
 		//Set up variables
 		mbWaitIfAppOutOfFocus = false;
@@ -205,20 +203,20 @@ namespace hpl {
 		mbApplicationIsVisible = false;
 
 		mvEngineTypeStrings.resize(eVariableType_LastEnum);
-		mvEngineTypeStrings[eVariableType_Int] =	"Int";
-		mvEngineTypeStrings[eVariableType_Float] =	"Float";
-		mvEngineTypeStrings[eVariableType_Vec2] =	"Vector2";
-		mvEngineTypeStrings[eVariableType_Vec3] =	"Vector3";
-		mvEngineTypeStrings[eVariableType_Color] =	"Color";
-		mvEngineTypeStrings[eVariableType_String] =	"String";
-		mvEngineTypeStrings[eVariableType_Enum] =	"Enum";
-		mvEngineTypeStrings[eVariableType_Bool] =	"Bool";
+		mvEngineTypeStrings[eVariableType_Int] = "Int";
+		mvEngineTypeStrings[eVariableType_Float] = "Float";
+		mvEngineTypeStrings[eVariableType_Vec2] = "Vector2";
+		mvEngineTypeStrings[eVariableType_Vec3] = "Vector3";
+		mvEngineTypeStrings[eVariableType_Color] = "Color";
+		mvEngineTypeStrings[eVariableType_String] = "String";
+		mvEngineTypeStrings[eVariableType_Enum] = "Enum";
+		mvEngineTypeStrings[eVariableType_Bool] = "Bool";
 	}
 
 
 	//-----------------------------------------------------------------------
 
-	void cEngine::GameInit(iLowLevelEngineSetup *apGameSetup,tFlag alHplSetupFlags, cEngineInitVars *apVars)
+	void cEngine::GameInit(iLowLevelEngineSetup* apGameSetup, tFlag alHplSetupFlags, cEngineInitVars* apVars)
 	{
 		mpGameSetup = apGameSetup;
 
@@ -228,7 +226,7 @@ namespace hpl {
 		//Create the modules that game connects to and init them!
 		Log(" Creating graphics module\n");
 		mpGraphics = mpGameSetup->CreateGraphics();
-		
+
 		Log(" Creating system module\n");
 		mpSystem = mpGameSetup->CreateSystem();
 
@@ -248,10 +246,10 @@ namespace hpl {
 		mpAI = mpGameSetup->CreateAI();
 
 		Log(" Creating gui module\n");
-		mpGui = hplNew(cGui,());
+		mpGui = hplNew(cGui, ());
 
 		Log(" Creating generate module\n");
-		mpGenerate = hplNew(cGenerate,());
+		mpGenerate = hplNew(cGenerate, ());
 
 		Log(" Creating haptic module\n");
 #ifdef INCLUDE_HAPTIC
@@ -262,38 +260,38 @@ namespace hpl {
 
 
 		Log(" Creating scene module\n");
-		mpScene = mpGameSetup->CreateScene(mpGraphics, mpResources, mpSound,mpPhysics,mpSystem,mpAI,mpGui,mpHaptic);
+		mpScene = mpGameSetup->CreateScene(mpGraphics, mpResources, mpSound, mpPhysics, mpSystem, mpAI, mpGui, mpHaptic);
 
 		Log("--------------------------------------------------------\n\n");
 
 
 		//Init the resources
-		mpResources->Init(mpGraphics,mpSystem, mpSound,mpScene,mpGui, mpPhysics);
+		mpResources->Init(mpGraphics, mpSystem, mpSound, mpScene, mpGui, mpPhysics);
 
 		//Init the graphics
-		mpGraphics->Init(	apVars->mGraphics.mvScreenSize.x,
-							apVars->mGraphics.mvScreenSize.y,
-							apVars->mGraphics.mlDisplay,
-							apVars->mGraphics.mlScreenBpp,
-							apVars->mGraphics.mbFullscreen,
-							apVars->mGraphics.mlMultisampling, 
-							apVars->mGraphics.mGpuProgramFormat,
-							apVars->mGraphics.msWindowCaption,
-							apVars->mGraphics.mvWindowPosition,
-							mpResources,alHplSetupFlags);
-		
+		mpGraphics->Init(apVars->mGraphics.mvScreenSize.x,
+			apVars->mGraphics.mvScreenSize.y,
+			apVars->mGraphics.mlDisplay,
+			apVars->mGraphics.mlScreenBpp,
+			apVars->mGraphics.mbFullscreen,
+			apVars->mGraphics.mlMultisampling,
+			apVars->mGraphics.mGpuProgramFormat,
+			apVars->mGraphics.msWindowCaption,
+			apVars->mGraphics.mvWindowPosition,
+			mpResources, alHplSetupFlags);
+
 		//Init Sound
 		mpSound->Init(mpResources, apVars->mSound.mlSoundDeviceID,
-						apVars->mSound.mbUseEnvironmentalAudio,
-						apVars->mSound.mlMaxChannels,
-						apVars->mSound.mlStreamUpdateFreq,
-						apVars->mSound.mbUseThreading,
-						apVars->mSound.mbUseVoiceManagement,
-						apVars->mSound.mlMaxMonoChannelsHint,
-						apVars->mSound.mlMaxStereoChannelsHint,
-						apVars->mSound.mlStreamBufferSize,
-						apVars->mSound.mlStreamBufferCount,
-						apVars->mSound.mbLowLevelLogging);
+			apVars->mSound.mbUseEnvironmentalAudio,
+			apVars->mSound.mlMaxChannels,
+			apVars->mSound.mlStreamUpdateFreq,
+			apVars->mSound.mbUseThreading,
+			apVars->mSound.mbUseVoiceManagement,
+			apVars->mSound.mlMaxMonoChannelsHint,
+			apVars->mSound.mlMaxStereoChannelsHint,
+			apVars->mSound.mlStreamBufferSize,
+			apVars->mSound.mlStreamBufferCount,
+			apVars->mSound.mbLowLevelLogging);
 
 		//Init physics
 		mpPhysics->Init(mpResources);
@@ -302,20 +300,20 @@ namespace hpl {
 		mpAI->Init();
 
 		//Init Gui
-		mpGui->Init(mpResources,mpGraphics,mpSound,mpScene, mpInput);
-		
+		mpGui->Init(mpResources, mpGraphics, mpSound, mpScene, mpInput);
+
 		//Init Generate
-		mpGenerate->Init(mpResources,mpGraphics);
+		mpGenerate->Init(mpResources, mpGraphics);
 
 
 		//Init haptic
-		if(mpHaptic) mpHaptic->Init(mpResources);
+		if (mpHaptic) mpHaptic->Init(mpResources);
 
 		Log("Initializing Game Module\n");
 		Log("--------------------------------------------------------\n");
 		//Create the updatehandler
 		Log(" Adding engine updates\n");
-		mpUpdater = hplNew( cUpdater,(mpSystem->GetLowLevel()));
+		mpUpdater = hplNew(cUpdater, (mpSystem->GetLowLevel()));
 
 		//Add some loaded modules to the updater
 		mpUpdater->AddGlobalUpdate(mpInput);
@@ -326,7 +324,7 @@ namespace hpl {
 		mpUpdater->AddGlobalUpdate(mpAI);
 		mpUpdater->AddGlobalUpdate(mpGui);
 		mpUpdater->AddGlobalUpdate(mpResources);
-		if(mpHaptic) mpUpdater->AddGlobalUpdate(mpHaptic);
+		if (mpHaptic) mpUpdater->AddGlobalUpdate(mpHaptic);
 
 		//Setup the "default" updater container
 		mpUpdater->AddContainer("Default");
@@ -337,22 +335,22 @@ namespace hpl {
 
 		//Init some standard script funcs
 		Log(" Initializing script functions\n");
-		cScriptFuncs::Init(mpGraphics,mpResources,mpSystem,mpInput,mpScene,mpSound,this);
-		
+		cScriptFuncs::Init(mpGraphics, mpResources, mpSystem, mpInput, mpScene, mpSound, this);
+
 		mpMutex = cPlatform::CreateMutEx();
 
 		//Since game is not done:
-		mbGameIsDone=false;
+		mbGameIsDone = false;
 
 		mbPaused = false;
 
 		mbRenderOnce = false;
 
-		mfGameTime =0;
+		mfGameTime = 0;
 
 		mbLimitFPS = true;
 
-		mpFPSCounter = hplNew( cFPSCounter,(mpSystem->GetLowLevel()) );
+		mpFPSCounter = hplNew(cFPSCounter, (mpSystem->GetLowLevel()));
 		mpFrameTimer = cPlatform::CreateTimer();
 		Log("--------------------------------------------------------\n\n");
 
@@ -370,13 +368,13 @@ namespace hpl {
 		hplDelete(mpFPSCounter);
 		hplDelete(mpFrameTimer);
 		hplDelete(mpMutex);
-		
+
 		hplDelete(mpUpdater);
-		
+
 		hplDelete(mpGui);
 		hplDelete(mpGenerate);
 		hplDelete(mpScene);
-		if(mpHaptic) hplDelete(mpHaptic);
+		if (mpHaptic) hplDelete(mpHaptic);
 		hplDelete(mpInput);
 		hplDelete(mpSound);
 		hplDelete(mpGraphics);
@@ -384,70 +382,68 @@ namespace hpl {
 		hplDelete(mpPhysics);
 		hplDelete(mpAI);
 		hplDelete(mpSystem);
-		
+
 		Log(" Deleting game setup provided by user\n");
 		hplDelete(mpGameSetup);
-		
+
 		Log("HPL Exit was successful!\n");
 	}
-
-	//-----------------------------------------------------------------------
 
 	//////////////////////////////////////////////////////////////////////////
 	// PUBLIC METHOD
 	//////////////////////////////////////////////////////////////////////////
 
 	//-----------------------------------------------------------------------
-	
-	int glClearUpdateCheck=0;
+
+	int glClearUpdateCheck = 0;
 	void cEngine::Run()
 	{
 		//Log line that ends user init.
 		Log("--------------------------------------------------------\n\n");
-		
-		double fNumOfTimes=0;
-		double fMediumTime=0;
+
+		double fNumOfTimes = 0;
+		double fMediumTime = 0;
 
 		mpUpdater->BroadcastMessageToAll(eUpdateableMessage_OnStart);
-		
+
 		mpLogicTimer->Reset();
 
 		//Loop the game... fix the var...
 		unsigned long lTempTime = cPlatform::GetApplicationTime();
-		
+
 		Log("Game Running\n");
 		Log("--------------------------------------------------------\n");
 
 		mfFrameTime = 0;
 		mpFrameTimer->Start();
-		
+
 		bool bIsUpdated = true;
 		bool bBufferSwap = false;
 		bool bSwappedOnce = false;
-		
+
 		//cMemoryManager::SetLogCreation(true);
 
-		while(!GetGameIsDone())
+		while (!GetGameIsDone())
 		{
 			//////////////////////////
 			//Check if application is in focus.
-			if(mbWaitIfAppOutOfFocus) CheckIfAppInFocusElseWait();
+			if (mbWaitIfAppOutOfFocus) CheckIfAppInFocusElseWait();
 
 			//////////////////////////
 			//Check if paused
-			if(GetPaused())
+			if (GetPaused())
 			{
 				cPlatform::Sleep(10);
-				mpInput->Update(1.0f/100.0f);
+				mpInput->Update(1.0f / 100.0f);
 				bIsUpdated = true;
 
-				mpUpdater->RunMessage(eUpdateableMessage_OnPauseUpdate, 1.0f/100.0f);
+				mpUpdater->RunMessage(eUpdateableMessage_OnPauseUpdate, 1.0f / 100.0f);
 			}
 			else
 			{
 				//////////////////////////
 				//Update logic.
-				while(mpLogicTimer->WantUpdate() && !GetGameIsDone())
+				while (mpLogicTimer->WantUpdate() && !GetGameIsDone())
 				{
 					/////////////////////////////////////////////
 					// Run Update callback in updater
@@ -456,12 +452,12 @@ namespace hpl {
 					mpUpdater->RunMessage(eUpdateableMessage_PostUpdate, GetStepSize());
 					bIsUpdated = true;
 
-                    if (mpInput->isQuitMessagePosted()) {
+					if (mpInput->isQuitMessagePosted()) {
 
-                        mpUpdater->RunMessage(eUpdateableMessage_OnQuit);
+						mpUpdater->RunMessage(eUpdateableMessage_OnQuit);
 
-                        mpInput->resetQuitMessagePosted();
-                    }
+						mpInput->resetQuitMessagePosted();
+					}
 
 					/////////////////////////////////////////////
 					// Run Check if any application focus changed
@@ -473,15 +469,15 @@ namespace hpl {
 
 					/////////////////////////////////////////////
 					// If log update is active, clear it regularly.
-					if(GetUpdateLogActive())
+					if (GetUpdateLogActive())
 					{
 						glClearUpdateCheck++;
-						if(glClearUpdateCheck % 20 == 0)
+						if (glClearUpdateCheck % 20 == 0)
 						{
-							if(mpUpdater->GetCurrentContainerName() == "Default") ClearUpdateLogFile();
+							if (mpUpdater->GetCurrentContainerName() == "Default") ClearUpdateLogFile();
 						}
 					}
-				
+
 					//Increase game time.
 					mfGameTime += GetStepSize();
 				}
@@ -490,9 +486,9 @@ namespace hpl {
 
 			//if(GetGameIsDone()) Log("1\n");
 
-            ////////////////////////////////////
+			////////////////////////////////////
 			// If rendering once, make a check and if already drawn screen, just continue
-			if(mbRenderOnce && bSwappedOnce)
+			if (mbRenderOnce && bSwappedOnce)
 			{
 				continue;
 			}
@@ -501,54 +497,54 @@ namespace hpl {
 
 			////////////////////////////////////////////////
 			//Swap buffers and call callback, do this after update, so hardware can work during update
-			if(bBufferSwap)
+			if (bBufferSwap)
 			{
 				bBufferSwap = false;
 				START_TIMING(WaitAndFinishRendering)
-				//mpGraphics->GetLowLevel()->WaitAndFinishRendering();
-				STOP_TIMING(WaitAndFinishRendering)
+					//mpGraphics->GetLowLevel()->WaitAndFinishRendering();
+					STOP_TIMING(WaitAndFinishRendering)
 
-				START_TIMING(SwapBuffers)
-				mpGraphics->GetLowLevel()->SwapBuffers();
+					START_TIMING(SwapBuffers)
+					mpGraphics->GetLowLevel()->SwapBuffers();
 				STOP_TIMING(SwapBuffers)
-				
-				//Log("Swap done: %d\n", cPlatform::GetApplicationTime());
-				mpUpdater->RunMessage(eUpdateableMessage_OnPostBufferSwap);
-				bSwappedOnce =true;
-				if(mbRenderOnce) continue;
+
+					//Log("Swap done: %d\n", cPlatform::GetApplicationTime());
+					mpUpdater->RunMessage(eUpdateableMessage_OnPostBufferSwap);
+				bSwappedOnce = true;
+				if (mbRenderOnce) continue;
 			}
 
 			//if(GetGameIsDone()) Log("3\n");
 
 			////////////////////////////////////
 			// Render frame
-			if(mbLimitFPS==false || bIsUpdated)
+			if (mbLimitFPS == false || bIsUpdated)
 			{
 				///////////////////////////////////////
-           		//Get the the from the last frame.
+				//Get the the from the last frame.
 				UpdateFrameTimer();
 
 				//On draw callback sending that to gui, etc
 				START_TIMING(OnDraw)
-				mpUpdater->RunMessage(eUpdateableMessage_OnDraw, mfFrameTime);
+					mpUpdater->RunMessage(eUpdateableMessage_OnDraw, mfFrameTime);
 				STOP_TIMING(OnDraw)
-				
-				//Render this frame
-				START_TIMING(RenderAll)
-				mpScene->Render(mfFrameTime, tSceneRenderFlag_All);
+
+					//Render this frame
+					START_TIMING(RenderAll)
+					mpScene->Render(mfFrameTime, tSceneRenderFlag_All);
 				STOP_TIMING(RenderAll)
 
-				START_TIMING(PostRender)
-				mpUpdater->RunMessage(eUpdateableMessage_OnPostRender, mfFrameTime);
+					START_TIMING(PostRender)
+					mpUpdater->RunMessage(eUpdateableMessage_OnPostRender, mfFrameTime);
 				STOP_TIMING(PostRender)
-				
-				START_TIMING(FlushRender)
-				mpGraphics->GetLowLevel()->FlushRendering();
+
+					START_TIMING(FlushRender)
+					mpGraphics->GetLowLevel()->FlushRendering();
 				STOP_TIMING(FlushRender)
-				
-				//Update fps counter.
-				mpFPSCounter->AddFrame();
-	           	
+
+					//Update fps counter.
+					mpFPSCounter->AddFrame();
+
 				fNumOfTimes++;
 				bIsUpdated = false;
 				bBufferSwap = true;
@@ -557,19 +553,19 @@ namespace hpl {
 			//if(GetGameIsDone()) Log("4\n");
 		}
 		Log("--------------------------------------------------------\n\n");
-	
+
 		Log("Statistics\n");
 		Log("--------------------------------------------------------\n");
 
 		unsigned long lTime = cPlatform::GetApplicationTime() - lTempTime;
-		fMediumTime = fNumOfTimes/(((double)lTime)/1000);
-		
+		fMediumTime = fNumOfTimes / (((double)lTime) / 1000);
+
 		Log(" Medium framerate: %f\n", fMediumTime);
 		Log("--------------------------------------------------------\n\n");
 
 		Log("User Exit\n");
 		Log("--------------------------------------------------------\n");
-		
+
 		mpUpdater->BroadcastMessageToAll(eUpdateableMessage_OnExit);
 	}
 	//-----------------------------------------------------------------------
@@ -617,7 +613,7 @@ namespace hpl {
 	}
 
 	//-----------------------------------------------------------------------
-	
+
 	float cEngine::GetFPS()
 	{
 		return mpFPSCounter->mfFPS;
@@ -634,9 +630,9 @@ namespace hpl {
 
 	float cEngine::GetAvgFrameTimeInMS()
 	{
-		return (1.0f/mpFPSCounter->mfFPS)*1000.0f;
+		return (1.0f / mpFPSCounter->mfFPS) * 1000.0f;
 	}
-	
+
 	//-----------------------------------------------------------------------
 
 	void cEngine::SetFPSUpdateRate(float afSec)
@@ -653,14 +649,14 @@ namespace hpl {
 	cScriptVar* cEngine::CreateLocalVar(const tString& asName)
 	{
 		cScriptVar* pVar;
-		pVar= GetLocalVar(asName);
-		if(pVar==NULL)
+		pVar = GetLocalVar(asName);
+		if (pVar == NULL)
 		{
 			cScriptVar Var;
 			Var.msName = asName;
-			m_mapLocalVars.insert(tScriptVarMap::value_type(cString::ToLowerCase(asName),Var));
-			pVar= GetLocalVar(asName);
-			if(pVar==NULL)FatalError("Very strange error when creating script var!\n");
+			m_mapLocalVars.insert(tScriptVarMap::value_type(cString::ToLowerCase(asName), Var));
+			pVar = GetLocalVar(asName);
+			if (pVar == NULL)FatalError("Very strange error when creating script var!\n");
 		}
 		return pVar;
 	}
@@ -670,7 +666,7 @@ namespace hpl {
 	cScriptVar* cEngine::GetLocalVar(const tString& asName)
 	{
 		tScriptVarMapIt it = m_mapLocalVars.find(cString::ToLowerCase(asName));
-		if(it==m_mapLocalVars.end()) return NULL;
+		if (it == m_mapLocalVars.end()) return NULL;
 
 		return &it->second;
 	}
@@ -687,14 +683,14 @@ namespace hpl {
 	cScriptVar* cEngine::CreateGlobalVar(const tString& asName)
 	{
 		cScriptVar* pVar;
-		pVar= GetGlobalVar(asName);
-		if(pVar==NULL)
+		pVar = GetGlobalVar(asName);
+		if (pVar == NULL)
 		{
 			cScriptVar Var;
 			Var.msName = asName;
-			m_mapGlobalVars.insert(tScriptVarMap::value_type(cString::ToLowerCase(asName),Var));
-			pVar= GetGlobalVar(asName);
-			if(pVar==NULL)FatalError("Very strange error when creating script var!\n");
+			m_mapGlobalVars.insert(tScriptVarMap::value_type(cString::ToLowerCase(asName), Var));
+			pVar = GetGlobalVar(asName);
+			if (pVar == NULL)FatalError("Very strange error when creating script var!\n");
 		}
 		return pVar;
 	}
@@ -704,7 +700,7 @@ namespace hpl {
 	cScriptVar* cEngine::GetGlobalVar(const tString& asName)
 	{
 		tScriptVarMapIt it = m_mapGlobalVars.find(cString::ToLowerCase(asName));
-		if(it==m_mapGlobalVars.end()) return NULL;
+		if (it == m_mapGlobalVars.end()) return NULL;
 
 		return &it->second;
 	}
@@ -728,9 +724,9 @@ namespace hpl {
 
 	eVariableType cEngine::GetEngineTypeFromString(const tString& asType)
 	{
-		for(int i=0;i<(int)mvEngineTypeStrings.size();++i)
+		for (int i = 0;i < (int)mvEngineTypeStrings.size();++i)
 		{
-			if(asType==mvEngineTypeStrings[i])
+			if (asType == mvEngineTypeStrings[i])
 				return (eVariableType)i;
 		}
 
@@ -748,17 +744,17 @@ namespace hpl {
 	{
 		mpMutex->Lock();
 
-		if(mbPaused != abPaused)
+		if (mbPaused != abPaused)
 		{
 			mbPaused = abPaused;
-			if(mbPaused==false) mpLogicTimer->Reset();
+			if (mbPaused == false) mpLogicTimer->Reset();
 		}
 
 		mpMutex->Unlock();
 	}
 
 	//-----------------------------------------------------------------------
-	
+
 	bool cEngine::GetPaused()
 	{
 		mpMutex->Lock();
@@ -770,8 +766,6 @@ namespace hpl {
 		return bRet;
 	}
 
-	//-----------------------------------------------------------------------
-
 	//////////////////////////////////////////////////////////////////////////
 	// PRIVATE METHOD
 	//////////////////////////////////////////////////////////////////////////
@@ -781,7 +775,7 @@ namespace hpl {
 	void cEngine::UpdateFrameTimer()
 	{
 		mpFrameTimer->Stop();
-		mfFrameTime = (float) mpFrameTimer->GetTimeInSec();
+		mfFrameTime = (float)mpFrameTimer->GetTimeInSec();
 
 		/*mlstFrameTimes.push_back(mpFrameTimer->GetTimeInMilliSec());
 		if((int)mlstFrameTimes.size() >= mlMaxFrameTimes)
@@ -794,7 +788,7 @@ namespace hpl {
 			mfAvgFrameTimeInMS = (float)(fFrameSum / (double)mlstFrameTimes.size());
 			mlstFrameTimes.clear();
 		}*/
-				
+
 		mpFrameTimer->Start();
 	}
 
@@ -806,30 +800,30 @@ namespace hpl {
 		bool bHadMouseFocus = mbApplicationHasMouseFocus;
 		bool bHadVisibility = mbApplicationIsVisible;
 
-        iLowLevelGraphics *pllGfx = mpGraphics->GetLowLevel();
+		iLowLevelGraphics* pllGfx = mpGraphics->GetLowLevel();
 		mbApplicationHasInputFocus = pllGfx->GetWindowInputFocus();
 		mbApplicationHasMouseFocus = pllGfx->GetWindowMouseFocus();
 		mbApplicationIsVisible = pllGfx->GetWindowIsVisible();
 
-		if(bHadInputFocus && !mbApplicationHasInputFocus) mpUpdater->RunMessage(eUpdateableMessage_AppLostInputFocus);
-		if(!bHadInputFocus && mbApplicationHasInputFocus) mpUpdater->RunMessage(eUpdateableMessage_AppGotInputFocus);
+		if (bHadInputFocus && !mbApplicationHasInputFocus) mpUpdater->RunMessage(eUpdateableMessage_AppLostInputFocus);
+		if (!bHadInputFocus && mbApplicationHasInputFocus) mpUpdater->RunMessage(eUpdateableMessage_AppGotInputFocus);
 
-		if(bHadMouseFocus && !mbApplicationHasMouseFocus) mpUpdater->RunMessage(eUpdateableMessage_AppLostMouseFocus);
-		if(!bHadMouseFocus && mbApplicationHasMouseFocus) mpUpdater->RunMessage(eUpdateableMessage_AppGotMouseFocus);
+		if (bHadMouseFocus && !mbApplicationHasMouseFocus) mpUpdater->RunMessage(eUpdateableMessage_AppLostMouseFocus);
+		if (!bHadMouseFocus && mbApplicationHasMouseFocus) mpUpdater->RunMessage(eUpdateableMessage_AppGotMouseFocus);
 
-		if(bHadVisibility && !mbApplicationIsVisible) mpUpdater->RunMessage(eUpdateableMessage_AppLostVisibility);
-		if(!bHadVisibility && mbApplicationIsVisible) mpUpdater->RunMessage(eUpdateableMessage_AppGotVisibility);
+		if (bHadVisibility && !mbApplicationIsVisible) mpUpdater->RunMessage(eUpdateableMessage_AppLostVisibility);
+		if (!bHadVisibility && mbApplicationIsVisible) mpUpdater->RunMessage(eUpdateableMessage_AppGotVisibility);
 	}
 
 	//-----------------------------------------------------------------------
 
 	void cEngine::CheckIfAppInFocusElseWait()
 	{
-		iLowLevelGraphics *pllGfx = mpGraphics->GetLowLevel();
-		while(	pllGfx->GetWindowInputFocus()==false)
+		iLowLevelGraphics* pllGfx = mpGraphics->GetLowLevel();
+		while (pllGfx->GetWindowInputFocus() == false)
 		{
 			cPlatform::Sleep(100);
-			mpInput->Update(1.0f/10.0f);
+			mpInput->Update(1.0f / 10.0f);
 		}
 	}
 
@@ -837,13 +831,13 @@ namespace hpl {
 
 	void cEngine::CheckAndBroadcastDeviceChange()
 	{
-		if(mbDevicePlugged)
+		if (mbDevicePlugged)
 		{
 			mbDevicePlugged = false;
 			mpUpdater->RunMessage(eUpdateableMessage_AppDeviceWasPlugged);
 		}
 
-		if(mbDeviceRemoved)
+		if (mbDeviceRemoved)
 		{
 			mbDeviceRemoved = false;
 			mpUpdater->RunMessage(eUpdateableMessage_AppDeviceWasRemoved);

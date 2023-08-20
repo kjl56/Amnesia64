@@ -42,6 +42,7 @@ namespace hpl {
 	class cGui;
 	class cGenerate;
 	class cEngine;
+	class cVREngine;
 	class cEngineInitVars;
 	class iTimer;
 	class iMutex;
@@ -237,6 +238,8 @@ namespace hpl {
 		cGui *mpGui;
 		cGenerate* mpGenerate;
 	};
+
+	//---------------------------------------------------
 
 };
 #endif // HPL_ENGINE_H

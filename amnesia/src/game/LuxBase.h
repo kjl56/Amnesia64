@@ -196,7 +196,7 @@ public:
 	// Public variables
 public:
 	cEngine *mpEngine;
-
+	
 	cConfigFile* mpMainConfig;
 	cConfigFile* mpUserConfig;
 	cConfigFile* mpUserKeyConfig;
