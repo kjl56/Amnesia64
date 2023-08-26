@@ -257,6 +257,9 @@ namespace hpl {
 #else
 		mpHaptic = NULL;
 #endif
+		Log(" Creating vr instance\n");
+		vrResult = xrCreateInstance(&apVars->instance_create_info, &vrInstance);
+		xr_check(NULL, vrResult, " Failed to create vr instance\n");
 
 
 		Log(" Creating scene module\n");
@@ -363,6 +366,8 @@ namespace hpl {
 	cEngine::~cEngine()
 	{
 		Log("--------------------------------------------------------\n\n");
+
+		xrDestroyInstance(vrInstance);
 
 		hplDelete(mpLogicTimer);
 		hplDelete(mpFPSCounter);
@@ -765,6 +770,22 @@ namespace hpl {
 
 		return bRet;
 	}
+
+	//-----------------------------------------------------------------------
+
+	void cEngine::xr_check(XrInstance instance, XrResult result, const char* logText)
+	{
+		if (!XR_SUCCEEDED(result)) {
+			Log(logText);
+			//convert logText to type wchar_t for message box
+			const size_t size = strlen(logText)+1;
+			wchar_t* wText = new wchar_t[size];
+			mbstowcs(wText, logText, size);
+			cPlatform::CreateMessageBox(_W("Error!"), wText);
+			delete[] wText;
+		}
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// PRIVATE METHOD

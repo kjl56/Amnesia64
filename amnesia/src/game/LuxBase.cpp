@@ -19,6 +19,8 @@
 
 #include "LuxBase.h"
 
+
+
 #include "LuxInputHandler.h"
 
 #include "LuxMapHandler.h"
@@ -1110,6 +1112,25 @@ bool cLuxBase::InitEngine()
 	vars.mSound.mlMaxChannels = mpConfigHandler->mlMaxSoundChannels;
 	vars.mSound.mlStreamBufferCount = mpConfigHandler->mlSoundStreamBuffers;
 	vars.mSound.mlStreamBufferSize = mpConfigHandler->mlSoundStreamBufferSize;
+
+	// vr vars
+	int enabled_ext_count = 0;
+	const char* enabled_exts[1] = {};
+
+	vars.instance_create_info.type = XR_TYPE_INSTANCE_CREATE_INFO;
+	vars.instance_create_info.next = NULL;
+	vars.instance_create_info.createFlags = 0;
+	vars.instance_create_info.enabledExtensionCount = enabled_ext_count;
+	vars.instance_create_info.enabledExtensionNames = enabled_exts;
+	vars.instance_create_info.enabledApiLayerCount = 0;
+	vars.instance_create_info.enabledApiLayerNames = NULL;
+	//vars.instance_create_info.applicationInfo.applicationName = "";
+	//vars.instance_create_info.applicationInfo.engineName = "";
+	strncpy(vars.instance_create_info.applicationInfo.applicationName, "Amnesia:TDD VR", XR_MAX_APPLICATION_NAME_SIZE);
+	strncpy(vars.instance_create_info.applicationInfo.engineName, "HPL VR", XR_MAX_ENGINE_NAME_SIZE);
+	vars.instance_create_info.applicationInfo.applicationVersion = 1;
+	vars.instance_create_info.applicationInfo.engineVersion = 0;
+	vars.instance_create_info.applicationInfo.apiVersion = XR_CURRENT_API_VERSION;
 
 	// Sound device filter set here (if needed)
 #if defined(_WIN32)

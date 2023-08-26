@@ -20,6 +20,7 @@
 #ifndef HPL_ENGINE_INIT_VARS_H
 #define HPL_ENGINE_INIT_VARS_H
 
+#include "openxr/openxr.h"
 #include "system/SystemTypes.h"
 #include "math/MathTypes.h"
 #include "graphics/GraphicsTypes.h"
@@ -102,7 +103,11 @@ namespace hpl {
 			int mlStreamBufferSize;
 			int mlStreamBufferCount;
 		};
-		cSoundVars mSound;			
+		cSoundVars mSound;		
+
+		////////////////////////////////
+		// VR
+		XrInstanceCreateInfo instance_create_info;
 
 	};
 

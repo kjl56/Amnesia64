@@ -20,6 +20,7 @@
 #ifndef HPL_ENGINE_H
 #define HPL_ENGINE_H
 
+#include "openxr/openxr.h"
 #include "system/SystemTypes.h"
 #include "engine/EngineTypes.h"
 
@@ -178,7 +179,12 @@ namespace hpl {
 		eVariableType GetEngineTypeFromString(const tString& asType);
 		eVariableType GetEngineTypeFromStringW(const tWString& asType);
 		const tString& GetEngineTypeString(eVariableType aType) { return mvEngineTypeStrings[aType]; }
-		
+
+		///// VR VARIABLES //////////////////////////
+		XrResult vrResult = XR_SUCCESS;
+		XrInstance vrInstance = XR_NULL_HANDLE;
+
+		void xr_check(XrInstance instance, XrResult result, const char* logText);
 
 	private:
 		void UpdateFrameTimer();
